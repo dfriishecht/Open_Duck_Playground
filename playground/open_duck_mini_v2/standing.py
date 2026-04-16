@@ -39,7 +39,7 @@ from playground.common.rewards import (
 )
 
 # if set to false, won't require the reference data to be present and won't compute the reference motions polynoms for nothing
-USE_IMITATION_REWARD = False
+USE_IMITATION_REWARD = True
 
 
 def default_config() -> config_dict.ConfigDict:
@@ -125,7 +125,7 @@ class Standing(open_duck_mini_v2_base.OpenDuckMiniV2Env):
 
         if USE_IMITATION_REWARD:
             self.PRM = PolyReferenceMotion(
-                "playground/open_duck_mini_v2/data/polynomial_coefficients.pkl"
+                "playground/open_duck_mini_v2/data/standing_jog_coefficients.pkl"
             )
 
         # Note: First joint is freejoint.
