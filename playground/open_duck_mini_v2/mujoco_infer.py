@@ -6,7 +6,7 @@ import mujoco.viewer
 import time
 import argparse
 from playground.common.onnx_infer import OnnxInfer
-from playground.common.poly_reference_motion_numpy import PolyReferenceMotion
+from playground.common.poly_reference_motion_numpy import PolyReferenceMotion, JogPolyReferenceMotionNumpy
 from playground.common.utils import LowPassActionFilter
 
 from playground.open_duck_mini_v2.mujoco_infer_base import MJInferBase
@@ -16,12 +16,13 @@ USE_MOTOR_SPEED_LIMITS = True
 
 class MjInfer(MJInferBase):
     def __init__(
-        self, model_path: str, reference_data: str, onnx_model_path: str, standing: bool
+        self, model_path: str, reference_data: str, onnx_model_path: str, standing: bool, jogging_stand: bool = False
     ):
         super().__init__(model_path)
 
         self.standing = standing
-        self.head_control_mode = self.standing
+        self.jogging_stand = jogging_stand
+        self.head_control_mode = self.standing or self.jogging_stand
 
         # Params
         self.linearVelocityScale = 1.0
@@ -32,7 +33,9 @@ class MjInfer(MJInferBase):
 
         self.action_filter = LowPassActionFilter(50, cutoff_frequency=37.5)
 
-        if not self.standing:
+        if self.jogging_stand:
+            self.PRM = JogPolyReferenceMotionNumpy(reference_data)
+        elif not self.standing:
             self.PRM = PolyReferenceMotion(reference_data)
 
         self.policy = OnnxInfer(onnx_model_path, awd=True)
@@ -81,24 +84,42 @@ class MjInfer(MJInferBase):
         # if not self.standing:
         # ref = self.PRM.get_reference_motion(*command[:3], self.imitation_i)
 
-        obs = np.concatenate(
-            [
-                gyro,
-                accelerometer,
-                # gravity,
-                command,
-                joint_angles - self.default_actuator,
-                joint_vel * self.dof_vel_scale,
-                self.last_action,
-                self.last_last_action,
-                self.last_last_last_action,
-                self.motor_targets,
-                contacts,
-                # ref if not self.standing else np.array([]),
-                # [self.imitation_i]
-                self.imitation_phase,
-            ]
-        )
+        if self.jogging_stand:
+            # jogging_stand training obs: no motor_targets, has ref_motion(40)
+            ref = np.array(
+                self.PRM.get_reference_motion(0.0, 0.0, 0.0, self.imitation_i)
+            )
+            obs = np.concatenate(
+                [
+                    gyro,
+                    accelerometer,
+                    command,
+                    joint_angles - self.default_actuator,
+                    joint_vel * self.dof_vel_scale,
+                    self.last_action,
+                    self.last_last_action,
+                    self.last_last_last_action,
+                    contacts,
+                    ref,
+                    self.imitation_phase,
+                ]
+            )
+        else:
+            obs = np.concatenate(
+                [
+                    gyro,
+                    accelerometer,
+                    command,
+                    joint_angles - self.default_actuator,
+                    joint_vel * self.dof_vel_scale,
+                    self.last_action,
+                    self.last_last_action,
+                    self.last_last_last_action,
+                    self.motor_targets,
+                    contacts,
+                    self.imitation_phase,
+                ]
+            )
 
         return obs
 
@@ -109,7 +130,7 @@ class MjInfer(MJInferBase):
         lin_vel_x = 0
         lin_vel_y = 0
         ang_vel = 0
-        if not self.head_control_mode:
+        if not self.head_control_mode and not self.jogging_stand:
             if keycode == 265:  # arrow up
                 lin_vel_x = self.COMMANDS_RANGE_X[1]
             if keycode == 264:  # arrow down
@@ -122,6 +143,12 @@ class MjInfer(MJInferBase):
                 ang_vel = self.COMMANDS_RANGE_THETA[1]
             if keycode == 69:  # e
                 ang_vel = self.COMMANDS_RANGE_THETA[0]
+            if keycode == 80:  # p
+                self.phase_frequency_factor += 0.1
+            if keycode == 59:  # m
+                self.phase_frequency_factor -= 0.1
+        elif not self.head_control_mode and self.jogging_stand:
+            # Let the user still manipulate the phase frequency for testing
             if keycode == 80:  # p
                 self.phase_frequency_factor += 0.1
             if keycode == 59:  # m
@@ -172,13 +199,11 @@ class MjInfer(MJInferBase):
                     counter += 1
 
                     if counter % self.decimation == 0:
-                        if not self.standing:
+                        if not self.standing or self.jogging_stand:
                             self.imitation_i += 1.0 * self.phase_frequency_factor
                             self.imitation_i = (
                                 self.imitation_i % self.PRM.nb_steps_in_period
                             )
-                            # print(self.PRM.nb_steps_in_period)
-                            # exit()
                             self.imitation_phase = np.array(
                                 [
                                     np.cos(
@@ -257,10 +282,17 @@ if __name__ == "__main__":
         default="playground/open_duck_mini_v2/xmls/scene_flat_terrain.xml",
     )
     parser.add_argument("--standing", action="store_true", default=False)
+    parser.add_argument(
+        "--jogging_stand",
+        action="store_true",
+        default=False,
+        help="Use jogging-in-place inference mode (jogging_stand env)",
+    )
 
     args = parser.parse_args()
 
     mjinfer = MjInfer(
-        args.model_path, args.reference_data, args.onnx_model_path, args.standing
+        args.model_path, args.reference_data, args.onnx_model_path, args.standing,
+        jogging_stand=args.jogging_stand,
     )
     mjinfer.run()

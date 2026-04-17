@@ -614,7 +614,7 @@ class JoggingStand(open_duck_mini_v2_base.OpenDuckMiniV2Env):
                 self.get_actuator_joints_qvel(data.qvel),
                 contact,
                 info["current_reference_motion"],
-                info["command"],
+                jp.array([1.0, 0.0, 0.0]),  # Dummy command to bypass the zero-command mask in custom_rewards.py
                 USE_IMITATION_REWARD,
             ),
             "head_pos": cost_head_pos(
