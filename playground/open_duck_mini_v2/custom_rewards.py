@@ -124,8 +124,8 @@ def reward_imitation(
         * w_ang_vel_z
     )
 
-    joint_pos_rew = -jp.sum(jp.square(joint_pos - ref_joint_pos)) * w_joint_pos
-    joint_vel_rew = -jp.sum(jp.square(joint_vel - ref_joint_vels)) * w_joint_vel
+    joint_pos_rew = jp.exp(-2.0 * jp.sum(jp.square(joint_pos - ref_joint_pos))) * w_joint_pos
+    joint_vel_rew = jp.exp(-0.01 * jp.sum(jp.square(joint_vel - ref_joint_vels))) * w_joint_vel
 
     ref_foot_contacts = jp.where(
         ref_foot_contacts > 0.5,
