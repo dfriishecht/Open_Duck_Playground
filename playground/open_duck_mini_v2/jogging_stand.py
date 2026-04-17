@@ -551,10 +551,11 @@ class JoggingStand(open_duck_mini_v2_base.OpenDuckMiniV2Env):
                 noisy_joint_vel * self._config.dof_vel_scale,       # 10
                 info["last_act"],                                    # 10
                 info["last_last_act"],                               # 10
-                info["last_last_last_act"],                          # 10
+                info["last_last_last_act"],                       # 10
+                info["motor_targets"],                               # 10
                 contact,                                             # 2
-                info["current_reference_motion"],                    # variable
-                info["imitation_phase"],                             # 2 — gait clock
+                #info["current_reference_motion"], 4/16 Test to see if model internalizes gait
+                info["imitation_phase"],                             # 2 gait clock
             ]
         )
 
