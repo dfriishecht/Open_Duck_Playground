@@ -130,33 +130,29 @@ def default_config() -> config_dict.ConfigDict:
         noise_config=config_dict.create(
             level=1.0,  # Set to 0.0 to disable noise.
             action_min_delay=0,  # env steps
-            action_max_delay=5,  # env steps
+            action_max_delay=3,  # env steps
             imu_min_delay=0,  # env steps
             imu_max_delay=3,  # env steps
             scales=config_dict.create(
                 hip_pos=0.03,   # rad
                 knee_pos=0.05,  # rad
                 ankle_pos=0.08, # rad
-                joint_vel=4.0,  # rad/s
+                joint_vel=2.5,  # rad/s
                 gravity=0.1,
                 linvel=0.1,
                 gyro=0.1,
-                accelerometer=0.005,
+                accelerometer=0.05,
             ),
         ),
         reward_config=config_dict.create(
             scales=config_dict.create(
-                # Stability rewards
+                tracking_lin_vel=2.5,
+                tracking_ang_vel=6.0,
+                torques=-1.0e-3,
                 orientation=-0.5,
                 alive=20.0,
-                # Imitation reward drives the jog gait cycle.
-                # stand_still is intentionally omitted: it penalizes joint
-                # movement and would suppress the jogging motion entirely.
-                imitation=2.0,
-                # Regularization
-                torques=-1.0e-3,
-                action_rate=-1.0,
-                head_pos=-2.0,
+                imitation=1.0,
+                action_rate=-0.5,
             ),
             tracking_sigma=0.01,
         ),
