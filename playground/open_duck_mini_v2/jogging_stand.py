@@ -152,10 +152,10 @@ def default_config() -> config_dict.ConfigDict:
                 # Imitation reward drives the jog gait cycle.
                 # stand_still is intentionally omitted: it penalizes joint
                 # movement and would suppress the jogging motion entirely.
-                imitation=1.0,
+                imitation=2.0,
                 # Regularization
                 torques=-1.0e-3,
-                action_rate=-1.5,
+                action_rate=-1.0,
                 head_pos=-2.0,
             ),
             tracking_sigma=0.01,
