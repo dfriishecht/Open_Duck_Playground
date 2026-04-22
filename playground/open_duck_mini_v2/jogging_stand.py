@@ -130,17 +130,17 @@ def default_config() -> config_dict.ConfigDict:
         noise_config=config_dict.create(
             level=1.0,  # Set to 0.0 to disable noise.
             action_min_delay=0,  # env steps
-            action_max_delay=3,  # env steps
+            action_max_delay=5,  # env steps
             imu_min_delay=0,  # env steps
             imu_max_delay=3,  # env steps
             scales=config_dict.create(
                 hip_pos=0.03,   # rad
                 knee_pos=0.05,  # rad
                 ankle_pos=0.08, # rad
-                joint_vel=2.5,  # rad/s
+                joint_vel=4.0,  # rad/s
                 gravity=0.1,
                 linvel=0.1,
-                gyro=0.05,
+                gyro=0.1,
                 accelerometer=0.005,
             ),
         ),
@@ -155,7 +155,7 @@ def default_config() -> config_dict.ConfigDict:
                 imitation=1.0,
                 # Regularization
                 torques=-1.0e-3,
-                action_rate=-0.375,
+                action_rate=-1.5,
                 head_pos=-2.0,
             ),
             tracking_sigma=0.01,
