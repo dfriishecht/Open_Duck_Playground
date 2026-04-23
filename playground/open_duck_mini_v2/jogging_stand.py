@@ -149,7 +149,7 @@ def default_config() -> config_dict.ConfigDict:
                 torques=-1.0e-3,
                 orientation=-2.0,
                 alive=20.0,
-                imitation=8.0,
+                imitation=2.0,
                 action_rate=-0.5,
             ),
             tracking_sigma=0.01,
@@ -157,7 +157,7 @@ def default_config() -> config_dict.ConfigDict:
         push_config=config_dict.create(
             enable=True,
             interval_range=[5.0, 10.0],
-            magnitude_range=[0.1, 1.0],
+            magnitude_range=[0.5, 4.0],
         ),
         neck_pitch_range=[-0.34, 1.1],
         head_pitch_range=[-0.78, 0.78],
