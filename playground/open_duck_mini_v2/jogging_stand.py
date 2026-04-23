@@ -39,8 +39,6 @@ from playground.common.rewards import (
     cost_action_rate,
     reward_alive,
     cost_head_pos,
-    reward_tracking_lin_vel,
-    reward_tracking_ang_vel,
 )
 from playground.open_duck_mini_v2.custom_rewards import reward_imitation
 
@@ -148,12 +146,10 @@ def default_config() -> config_dict.ConfigDict:
         ),
         reward_config=config_dict.create(
             scales=config_dict.create(
-                tracking_lin_vel=2.5,
-                tracking_ang_vel=6.0,
                 torques=-1.0e-3,
-                orientation=-0.5,
+                orientation=-2.0,
                 alive=20.0,
-                imitation=1.0,
+                imitation=8.0,
                 action_rate=-0.5,
             ),
             tracking_sigma=0.01,
@@ -614,16 +610,6 @@ class JoggingStand(open_duck_mini_v2_base.OpenDuckMiniV2Env):
                 info["current_reference_motion"],
                 jp.array([1.0, 0.0, 0.0]),  # Dummy command to bypass the zero-command mask in custom_rewards.py
                 USE_IMITATION_REWARD,
-            ),
-            "tracking_lin_vel": reward_tracking_lin_vel(
-                info["command"],
-                self.get_local_linvel(data),
-                self._config.reward_config.tracking_sigma,
-            ),
-            "tracking_ang_vel": reward_tracking_ang_vel(
-                info["command"],
-                self.get_gyro(data),
-                self._config.reward_config.tracking_sigma,
             ),
         }
 
