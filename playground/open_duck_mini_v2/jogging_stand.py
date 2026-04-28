@@ -15,6 +15,9 @@
 # ==============================================================================
 """Jogging-in-place task for Open Duck Mini V2.
 
+This environment is a modified version of the Joytstick environment, built
+to facilitate locomotive behavior without needing user input.
+
 The robot jogs rhythmically in place (feet lifting and planting) without any
 forward/lateral locomotion.
 """
@@ -47,7 +50,8 @@ USE_IMITATION_REWARD = True
 
 
 class JogPolyReferenceMotion(PolyReferenceMotion):
-    """Handles pkl files whose keys are formatted as 'label_dx_dy'
+    """
+    Handles pkl files whose keys are formatted as 'label_dx_dy'
     (e.g. 'jog_0.0_0.0') instead of the standard 'dx_dy_dtheta' triplet.
     The motion is always looked up at dtheta=0.0 (jogging in place).
     """
@@ -118,6 +122,11 @@ class JogPolyReferenceMotion(PolyReferenceMotion):
 
 
 def default_config() -> config_dict.ConfigDict:
+    """
+    Defines a dictionary of default environment variables.
+
+    Importantly, this is where sensor noise and delay is defined.
+    """
     return config_dict.create(
         ctrl_dt=0.02,
         sim_dt=0.002,
@@ -168,7 +177,10 @@ def default_config() -> config_dict.ConfigDict:
 
 
 class JoggingStand(open_duck_mini_v2_base.OpenDuckMiniV2Env):
-    """Jog in place — rhythmic stepping without forward locomotion."""
+    """
+    Defines the jogging stand environment, including stepping through the environemnt,
+    collecting observations, and netting out rewards.
+    """
 
     def __init__(
         self,
@@ -184,6 +196,10 @@ class JoggingStand(open_duck_mini_v2_base.OpenDuckMiniV2Env):
         self._post_init()
 
     def _post_init(self) -> None:
+        """
+        Key factor here is the reference motion input with self.PRM,
+        and the defining of joint limits.
+        """
         self._init_q = jp.array(self._mj_model.keyframe("home").qpos)
         self._default_actuator = self._mj_model.keyframe("home").ctrl
 
@@ -246,6 +262,9 @@ class JoggingStand(open_duck_mini_v2_base.OpenDuckMiniV2Env):
         self._qpos_noise_scale = jp.array(qpos_noise_scale)
 
     def reset(self, rng: jax.Array) -> mjx_env.State:
+        """
+        Resets training environment to initialized state.
+        """
         qpos = self._init_q
         qvel = jp.zeros(self.mjx_model.nv)
 
@@ -340,6 +359,10 @@ class JoggingStand(open_duck_mini_v2_base.OpenDuckMiniV2Env):
         return mjx_env.State(data, obs, reward, done, metrics, info)
 
     def step(self, state: mjx_env.State, action: jax.Array) -> mjx_env.State:
+        """
+        Advance a timestep. Key components here include advancing the reference motion phase,
+        appending action histories, applying pertubations to the robot, and calculating rewards.
+        """
         # Advance gait clock
         state.info["imitation_i"] += 1
         state.info["imitation_i"] = (
@@ -471,6 +494,10 @@ class JoggingStand(open_duck_mini_v2_base.OpenDuckMiniV2Env):
     def _get_obs(
         self, data: mjx.Data, info: dict[str, Any], contact: jax.Array
     ) -> mjx_env.Observation:
+        """
+        Applies noise to ground truth values and returns them as observations.
+        In addtion, this is where the state vector is defined (line 564).
+        """
         gyro = self.get_gyro(data)
         info["rng"], noise_rng = jax.random.split(info["rng"])
         noisy_gyro = (
@@ -594,6 +621,10 @@ class JoggingStand(open_duck_mini_v2_base.OpenDuckMiniV2Env):
         first_contact: jax.Array,
         contact: jax.Array,
     ) -> dict[str, jax.Array]:
+        """
+        Defines the set of rewards to be used during training. Further defintions of rewards can
+        be found in common/rewards.py and open_duck_mini_v2/custon_rewards.py
+        """
         del metrics  # Unused.
 
         return {
@@ -614,7 +645,10 @@ class JoggingStand(open_duck_mini_v2_base.OpenDuckMiniV2Env):
         }
 
     def sample_command(self, rng: jax.Array) -> jax.Array:
-        """Only head joint targets are randomised."""
+        """
+        Provides a randomized sample command for use during testing. Since the actual robot
+        does not take in locomotion commands, this only applies to head movements.
+        """
         rng1, rng2, rng3, rng4 = jax.random.split(rng, 4)
 
         neck_pitch = jax.random.uniform(
