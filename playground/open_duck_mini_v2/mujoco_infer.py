@@ -84,42 +84,21 @@ class MjInfer(MJInferBase):
         # if not self.standing:
         # ref = self.PRM.get_reference_motion(*command[:3], self.imitation_i)
 
-        if self.jogging_stand:
-            # jogging_stand training obs: no motor_targets, has ref_motion(40)
-            ref = np.array(
-                self.PRM.get_reference_motion(0.0, 0.0, 0.0, self.imitation_i)
-            )
-            obs = np.concatenate(
-                [
-                    gyro,
-                    accelerometer,
-                    command,
-                    joint_angles - self.default_actuator,
-                    joint_vel * self.dof_vel_scale,
-                    self.last_action,
-                    self.last_last_action,
-                    self.last_last_last_action,
-                    contacts,
-                    ref,
-                    self.imitation_phase,
-                ]
-            )
-        else:
-            obs = np.concatenate(
-                [
-                    gyro,
-                    accelerometer,
-                    command,
-                    joint_angles - self.default_actuator,
-                    joint_vel * self.dof_vel_scale,
-                    self.last_action,
-                    self.last_last_action,
-                    self.last_last_last_action,
-                    self.motor_targets,
-                    contacts,
-                    self.imitation_phase,
-                ]
-            )
+        obs = np.concatenate(
+            [
+                gyro,
+                accelerometer,
+                command,
+                joint_angles - self.default_actuator,
+                joint_vel * self.dof_vel_scale,
+                self.last_action,
+                self.last_last_action,
+                self.last_last_last_action,
+                self.motor_targets,
+                contacts,
+                self.imitation_phase,
+            ]
+        )
 
         return obs
 
@@ -149,7 +128,7 @@ class MjInfer(MJInferBase):
                 self.phase_frequency_factor -= 0.1
         elif not self.head_control_mode and self.jogging_stand:
             # Let the user still manipulate the phase frequency for testing
-            if keycode == 80:  # p
+            if keycode == 80:  # ppp
                 self.phase_frequency_factor += 0.1
             if keycode == 59:  # m
                 self.phase_frequency_factor -= 0.1

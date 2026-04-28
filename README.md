@@ -38,6 +38,12 @@ Infer mujoco
 uv run playground/open_duck_mini_v2/mujoco_infer.py -o <path_to_.onnx>
 ```
 
+For an example of the trained running jog policy, run:
+
+```bash
+uv run playground/open_duck_mini_v2/mujoco_infer.py --jogging_stand -o checkpoints/standing_jog_rev9_3.onnx
+```
+
 # Documentation
 
 ## Project structure : 
