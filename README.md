@@ -65,6 +65,7 @@ uv run playground/open_duck_mini_v2/mujoco_infer.py --jogging_stand -o checkpoin
 │   │   ├── data
 │   │   │   └── polynomial_coefficients.pkl
 │   │   ├── joystick.py
+|   |   |── jogging_stand.py
 │   │   ├── mujoco_infer.py
 │   │   ├── constants.py
 │   │   ├── runner.py
@@ -97,7 +98,7 @@ You will need to:
 Inspired from https://github.com/kscalelabs/mujoco_playground
 
 
-## Current win
+## Current walking win
 
 ```bash
 uv run playground/open_duck_mini_v2/runner.py --task flat_terrain_backlash --num_timesteps 300000000
