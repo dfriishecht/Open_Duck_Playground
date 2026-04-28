@@ -1,5 +1,13 @@
 # Open Duck Playground
 
+# Deep Dive Final Policy Results
+
+Policy was trained for 300 million timesteps on one L4 GPU in the cloud. Training time took ~2 hours.
+
+## In Sim Policy Results
+
+## On Real Policy Results
+
 # Installation 
 
 Install uv
