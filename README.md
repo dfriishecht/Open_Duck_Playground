@@ -5,13 +5,9 @@
 Policy was trained for 300 million timesteps on one L4 GPU in the cloud. Training time took ~2 hours.
 
 ## In Sim Policy Results
-<img width="300" height="182" alt="eval_episode_reward" src="https://github.com/user-attachments/assets/6e03a22d-2b4e-48c5-a055-f111755808b1" />
-
+<img width="611" height="474" alt="Training_Results" src="https://github.com/user-attachments/assets/8545179a-6efa-41e8-a503-eed9f5bda4b2" />
 
 https://github.com/user-attachments/assets/4c86c0bd-efcf-4228-b5fd-5c53ea265b96
-
-
-## On Real Policy Results
 
 # Installation 
 
